@@ -28,7 +28,11 @@ export const getRawCoverage = async (
     workingDirectory?: string
 ): Promise<
     | string
-    | { success: false; failReason: FailReason.TESTS_FAILED; error?: Error }
+    | {
+          success: false;
+          failReason: FailReason.TESTS_FAILED | FailReason.NO_REPORT_PRESENT;
+          error: Error;
+      }
 > => {
     if (branch) {
         // NOTE: It is possible that the 'git fetch -all' command will fail due to different file permissions, so allow that to fail gracefully
@@ -51,8 +55,6 @@ export const getRawCoverage = async (
         });
     }
 
-    let executionError: Error | undefined = undefined;
-
     if (shouldRunTestScript(skipStep)) {
         try {
             await exec(testCommand, [], {
@@ -60,7 +62,11 @@ export const getRawCoverage = async (
             });
         } catch (error) {
             console.error('Test execution failed with error:', error);
-            executionError = error instanceof Error ? error : undefined;
+            return {
+                success: false,
+                failReason: FailReason.TESTS_FAILED,
+                error: error as Error,
+            };
         }
     }
 
@@ -78,8 +84,11 @@ export const getRawCoverage = async (
 
         return {
             success: false,
-            failReason: FailReason.TESTS_FAILED,
-            error: executionError,
+            failReason: FailReason.NO_REPORT_PRESENT,
+            error: new Error(
+                'Could not read report file located at ' +
+                    joinPaths(workingDirectory, REPORT_PATH)
+            ),
         };
     }
 };
