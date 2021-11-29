@@ -4,6 +4,7 @@ export enum FailReason {
     TESTS_FAILED = 'testsFailed',
     INVALID_COVERAGE_FORMAT = 'invalidFormat',
     UNDER_THRESHOLD = 'underThreshold',
+    NO_REPORT_PRESENT = 'noReportPresent',
     UNKNOWN_ERROR = 'unknownError',
 }
 
