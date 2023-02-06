@@ -9,7 +9,7 @@ import { FailReason, Report } from '../typings/Report';
 export const generatePRReport = async (
     icons: Icons,
     headReport: Report,
-    baseReport: Report,
+    baseReport: Report | undefined,
     coverageThreshold: number | undefined,
     repo: { owner: string; repo: string },
     pr: { number: number },

@@ -42,19 +42,19 @@ async function run() {
             workingDirectory
         );
 
-        let baseReport: Report | undefined = undefined;
+        // Temporarily stop doing base branch reports
+        const baseReport: Report | undefined = undefined;
+        // if (isInPR && pull_request) {
+        //     const [generatedBaseReport] = await collectCoverage(
+        //         testScript,
+        //         packageManager,
+        //         skipStep,
+        //         pull_request.base.ref,
+        //         workingDirectory
+        //     );
 
-        if (isInPR && pull_request) {
-            const [generatedBaseReport] = await collectCoverage(
-                testScript,
-                packageManager,
-                skipStep,
-                pull_request.base.ref,
-                workingDirectory
-            );
-
-            baseReport = generatedBaseReport;
-        }
+        //     baseReport = generatedBaseReport;
+        // }
 
         if (
             threshold !== undefined &&
@@ -110,7 +110,8 @@ async function run() {
             }
         }
 
-        if (isInPR && baseReport && pull_request) {
+        // if (isInPR && baseReport && pull_request) {
+        if (isInPR && pull_request) {
             await generatePRReport(
                 (icons as Record<string, Icons>)[iconType],
                 headReport,

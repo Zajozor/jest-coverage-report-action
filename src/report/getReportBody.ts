@@ -6,8 +6,8 @@ import { getFormattedFailReason } from '../format/getFormattedFailReason';
 import { Icons } from '../format/Icons';
 import { insertArgs } from '../format/insertArgs';
 import REPORT from '../format/REPORT.md';
-import { FailReason, Report } from '../typings/Report';
 import strings from '../format/strings.json';
+import { FailReason, Report } from '../typings/Report';
 
 export const getReportBody = (
     icons: Icons,
@@ -20,7 +20,7 @@ export const getReportBody = (
     let reportContent: string;
     let failReason = headReport.failReason;
 
-    let normalizedBaseReport: Report = baseReport as Report;
+    let normalizedBaseReport = baseReport ?? headReport;
 
     if (
         !baseReport ||
