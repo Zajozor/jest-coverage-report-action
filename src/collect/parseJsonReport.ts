@@ -1,9 +1,9 @@
-import { JsonReport } from '../typings/JsonReport';
+import { CoverageMap } from '../typings/JsonReport';
 import { FailReason } from '../typings/Report';
 
 export const parseJsonReport = (source: string) => {
     try {
-        const jsonReport: JsonReport = JSON.parse(source);
+        const jsonReport: CoverageMap = JSON.parse(source);
 
         return jsonReport;
     } catch (err) {

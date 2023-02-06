@@ -12,7 +12,7 @@ import { FailReason, Report } from '../typings/Report';
 export const getReportBody = (
     icons: Icons,
     headReport: Report,
-    baseReport: Report | undefined,
+    baseReport: undefined,
     coverageThreshold: number | undefined,
     dir?: string,
     customTitle?: string
@@ -20,21 +20,7 @@ export const getReportBody = (
     let reportContent: string;
     let failReason = headReport.failReason;
 
-    let normalizedBaseReport = baseReport ?? headReport;
-
-    if (
-        !baseReport ||
-        !baseReport?.success ||
-        !baseReport?.summary ||
-        !baseReport?.details ||
-        baseReport?.failReason
-    ) {
-        console.log(
-            'Head is ok, but base branch has not valid coverage. Some features will be disabled.'
-        );
-
-        normalizedBaseReport = headReport;
-    }
+    // temporarily not supporting base reports
 
     if (
         headReport.success &&
@@ -45,9 +31,9 @@ export const getReportBody = (
         reportContent = getFormattedCoverage(
             icons,
             headReport.summary,
-            normalizedBaseReport.summary!,
+            headReport.summary,
             headReport.details,
-            normalizedBaseReport.details!,
+            headReport.details,
             coverageThreshold
         );
     } else {
@@ -70,9 +56,9 @@ export const getReportBody = (
                 getFormattedCoverage(
                     icons,
                     headReport.summary,
-                    normalizedBaseReport.summary!,
+                    headReport.summary,
                     headReport.details,
-                    normalizedBaseReport.details!,
+                    headReport.details,
                     coverageThreshold
                 )
             );

@@ -23,7 +23,7 @@ export const generatePRReport = async (
         const reportBody = getReportBody(
             icons,
             headReport,
-            baseReport,
+            undefined,
             coverageThreshold,
             dir,
             customTitle

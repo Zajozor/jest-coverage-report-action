@@ -1,7 +1,7 @@
 import { join } from 'path';
 
 import { exec } from '@actions/exec';
-import { readFile, rmdir } from 'fs-extra';
+import { readdirSync, readFile, rmdir } from 'fs-extra';
 
 import { REPORT_PATH } from '../constants/REPORT_PATH';
 import { PackageManagerType, SkipStepType } from '../typings/Options';
@@ -54,7 +54,6 @@ export const getRawCoverage = async (
     //         cwd: workingDirectory,
     //     });
     // }
-
     if (shouldRunTestScript(skipStep)) {
         try {
             await exec(testCommand, [], {
