@@ -34,26 +34,26 @@ export const getRawCoverage = async (
           error: Error;
       }
 > => {
-    if (branch) {
-        // NOTE: It is possible that the 'git fetch -all' command will fail due to different file permissions, so allow that to fail gracefully
-        try {
-            await exec(`git fetch --all --depth=1`);
-        } catch (err) {
-            console.warn('Error fetching git repository', err);
-        }
-        await exec(`git checkout -f ${branch}`);
-    }
+    // if (branch) {
+    //     // NOTE: It is possible that the 'git fetch -all' command will fail due to different file permissions, so allow that to fail gracefully
+    //     try {
+    //         await exec(`git fetch --all --depth=1`);
+    //     } catch (err) {
+    //         console.warn('Error fetching git repository', err);
+    //     }
+    //     await exec(`git checkout -f ${branch}`);
+    // }
 
     // NOTE: The `npm ci` command is not used. Because if your version of npm is old, the generated `package-lock.json` will also be old, and the latest version of `npm ci` will fail.
-    await rmdir(joinPaths(workingDirectory, 'node_modules'), {
-        recursive: true,
-    });
+    // await rmdir(joinPaths(workingDirectory, 'node_modules'), {
+    //     recursive: true,
+    // });
 
-    if (shouldInstallDeps(skipStep)) {
-        await exec(getPackageManagerInstallCommand(packageManager), undefined, {
-            cwd: workingDirectory,
-        });
-    }
+    // if (shouldInstallDeps(skipStep)) {
+    //     await exec(getPackageManagerInstallCommand(packageManager), undefined, {
+    //         cwd: workingDirectory,
+    //     });
+    // }
 
     if (shouldRunTestScript(skipStep)) {
         try {
