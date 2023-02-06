@@ -1,1 +1,2 @@
-export const REPORT_PATH = 'report.json';
+// Default c8+ava location
+export const REPORT_PATH = 'coverage/coverage-final.json';
