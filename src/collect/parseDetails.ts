@@ -10,10 +10,10 @@ import {
 } from './counters';
 import { getPercents } from './getPercents';
 import { CoverageDetailsMap } from '../typings/Coverage';
-import { JsonReport } from '../typings/JsonReport';
+import { CoverageMap } from '../typings/JsonReport';
 
-export const parseDetails = (jsonReport: JsonReport) => {
-    return Object.entries(jsonReport.coverageMap).reduce<CoverageDetailsMap>(
+export const parseDetails = (jsonReport: CoverageMap) => {
+    return Object.entries(jsonReport).reduce<CoverageDetailsMap>(
         (acc, [filename, fileCoverage]) => {
             const normalizedFilename = relative(process.cwd(), filename);
             acc[normalizedFilename] = {

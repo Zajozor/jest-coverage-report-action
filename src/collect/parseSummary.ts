@@ -7,33 +7,28 @@ import {
     totalLinesCounter,
 } from './counters';
 import { getSummary } from './getSummary';
-import { JsonReport } from '../typings/JsonReport';
+import { CoverageMap } from '../typings/JsonReport';
 
-export const parseSummary = (jsonReport: JsonReport) => {
+export const parseSummary = (jsonReport: CoverageMap) => {
     return [
         getSummary(
-            jsonReport.coverageMap,
+            jsonReport,
             standardTotalCounter('s'),
             standardCoveredCounter('s'),
             'Statements'
         ),
         getSummary(
-            jsonReport.coverageMap,
+            jsonReport,
             totalBranchesCounter,
             coveredBranchesCounter,
             'Branches'
         ),
         getSummary(
-            jsonReport.coverageMap,
+            jsonReport,
             standardTotalCounter('f'),
             standardCoveredCounter('f'),
             'Functions'
         ),
-        getSummary(
-            jsonReport.coverageMap,
-            totalLinesCounter,
-            coveredLinesCounter,
-            'Lines'
-        ),
+        getSummary(jsonReport, totalLinesCounter, coveredLinesCounter, 'Lines'),
     ];
 };

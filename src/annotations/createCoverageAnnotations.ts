@@ -9,7 +9,7 @@ import {
     notCoveredStatementMessage,
     notCoveredStatementTitle,
 } from '../format/strings.json';
-import { JsonReport, Location } from '../typings/JsonReport';
+import { CoverageMap, Location } from '../typings/JsonReport';
 
 const getLocation = (
     start: Location = { line: 0 },
@@ -33,75 +33,72 @@ const getLocation = (
 });
 
 export const createCoverageAnnotations = (
-    jsonReport: JsonReport
+    jsonReport: CoverageMap
 ): Array<Annotation> => {
     const annotations: Annotation[] = [];
 
-    Object.entries(jsonReport.coverageMap).forEach(
-        ([fileName, fileCoverage]) => {
-            const normalizedFilename = relative(process.cwd(), fileName);
-            Object.entries(fileCoverage.statementMap).forEach(
-                ([statementIndex, statementCoverage]) => {
-                    if (fileCoverage.s[+statementIndex] === 0) {
-                        annotations.push({
-                            ...getLocation(
-                                statementCoverage.start,
-                                statementCoverage.end
-                            ),
-                            path: normalizedFilename,
-                            annotation_level: 'warning',
-                            title: notCoveredStatementTitle,
-                            message: notCoveredStatementMessage,
-                        });
-                    }
+    Object.entries(jsonReport).forEach(([fileName, fileCoverage]) => {
+        const normalizedFilename = relative(process.cwd(), fileName);
+        Object.entries(fileCoverage.statementMap).forEach(
+            ([statementIndex, statementCoverage]) => {
+                if (fileCoverage.s[+statementIndex] === 0) {
+                    annotations.push({
+                        ...getLocation(
+                            statementCoverage.start,
+                            statementCoverage.end
+                        ),
+                        path: normalizedFilename,
+                        annotation_level: 'warning',
+                        title: notCoveredStatementTitle,
+                        message: notCoveredStatementMessage,
+                    });
                 }
-            );
+            }
+        );
 
-            Object.entries(fileCoverage.branchMap).forEach(
-                ([branchIndex, branchCoverage]) => {
-                    if (branchCoverage.locations) {
-                        branchCoverage.locations.forEach(
-                            (location, locationIndex) => {
-                                if (
-                                    fileCoverage.b[+branchIndex][
-                                        locationIndex
-                                    ] === 0
-                                ) {
-                                    annotations.push({
-                                        ...getLocation(
-                                            location.start,
-                                            location.end
-                                        ),
-                                        path: normalizedFilename,
-                                        annotation_level: 'warning',
-                                        title: notCoveredBranchTitle,
-                                        message: notCoveredBranchMessage,
-                                    });
-                                }
+        Object.entries(fileCoverage.branchMap).forEach(
+            ([branchIndex, branchCoverage]) => {
+                if (branchCoverage.locations) {
+                    branchCoverage.locations.forEach(
+                        (location, locationIndex) => {
+                            if (
+                                fileCoverage.b[+branchIndex][locationIndex] ===
+                                0
+                            ) {
+                                annotations.push({
+                                    ...getLocation(
+                                        location.start,
+                                        location.end
+                                    ),
+                                    path: normalizedFilename,
+                                    annotation_level: 'warning',
+                                    title: notCoveredBranchTitle,
+                                    message: notCoveredBranchMessage,
+                                });
                             }
-                        );
-                    }
+                        }
+                    );
                 }
-            );
+            }
+        );
 
-            Object.entries(fileCoverage.fnMap).forEach(
-                ([functionIndex, functionCoverage]) => {
-                    if (fileCoverage.f[+functionIndex] === 0) {
-                        annotations.push({
-                            ...getLocation(
-                                functionCoverage.decl.start,
-                                functionCoverage.decl.end
-                            ),
-                            path: normalizedFilename,
-                            annotation_level: 'warning',
-                            title: notCoveredFunctionTitle,
-                            message: notCoveredFunctionMessage,
-                        });
-                    }
+        Object.entries(fileCoverage.fnMap).forEach(
+            ([functionIndex, functionCoverage]) => {
+                if (fileCoverage.f[+functionIndex] === 0) {
+                    annotations.push({
+                        ...getLocation(
+                            functionCoverage.decl.start,
+                            functionCoverage.decl.end
+                        ),
+                        path: normalizedFilename,
+                        annotation_level: 'warning',
+                        title: notCoveredFunctionTitle,
+                        message: notCoveredFunctionMessage,
+                    });
                 }
-            );
-        }
-    );
+            }
+        );
+    });
 
     return annotations;
 };

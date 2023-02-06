@@ -27,13 +27,14 @@ async function run() {
             annotations,
             packageManager,
             skipStep,
+            customTitle,
         } = await getOptions();
 
         const octokit = getOctokit(token);
 
-        const isInPR = context.eventName === 'pull_request';
+        // const isInPR = context.eventName === 'pull_request';
 
-        const [headReport, jsonReport] = await collectCoverage(
+        const coverageResult = await collectCoverage(
             testScript,
             packageManager,
             skipStep,
@@ -41,19 +42,24 @@ async function run() {
             workingDirectory
         );
 
-        let baseReport: Report | undefined = undefined;
-
-        if (isInPR && pull_request) {
-            const [generatedBaseReport] = await collectCoverage(
-                testScript,
-                packageManager,
-                skipStep,
-                pull_request.base.ref,
-                workingDirectory
-            );
-
-            baseReport = generatedBaseReport;
+        if (!coverageResult) {
+            throw new Error('Coverage file is missing!');
         }
+        const [headReport, jsonReport] = coverageResult;
+
+        // Temporarily stop doing base branch reports
+        // const baseReport: Report | undefined = undefined;
+        // if (isInPR && pull_request) {
+        //     const [generatedBaseReport] = await collectCoverage(
+        //         testScript,
+        //         packageManager,
+        //         skipStep,
+        //         pull_request.base.ref,
+        //         workingDirectory
+        //     );
+
+        //     baseReport = generatedBaseReport;
+        // }
 
         if (
             threshold !== undefined &&
@@ -68,67 +74,71 @@ async function run() {
             headReport.failReason = FailReason.UNDER_THRESHOLD;
         }
 
-        if (jsonReport && isAnnotationEnabled(annotations, 'failed-tests')) {
-            const failedAnnotations = createFailedTestsAnnotations(jsonReport);
-            if (failedAnnotations.length > 0) {
-                try {
-                    await octokit.checks.create(
-                        formatFailedTestsAnnotations(
-                            jsonReport,
-                            failedAnnotations
-                        )
-                    );
-                } catch (err) {
-                    console.error('Failed to create annotations', err);
-                }
-            }
-        }
+        // if (jsonReport && isAnnotationEnabled(annotations, 'failed-tests')) {
+        //     const failedAnnotations = createFailedTestsAnnotations(jsonReport);
+        //     if (failedAnnotations.length > 0) {
+        //         try {
+        //             await octokit.checks.create(
+        //                 formatFailedTestsAnnotations(
+        //                     jsonReport,
+        //                     failedAnnotations
+        //                 )
+        //             );
+        //         } catch (err) {
+        //             console.error('Failed to create annotations', err);
+        //         }
+        //     }
+        // }
 
-        if (
-            jsonReport &&
-            isAnnotationEnabled(annotations, 'coverage') &&
-            headReport.summary
-        ) {
-            const coverageAnnotations = createCoverageAnnotations(jsonReport);
-            if (coverageAnnotations.length > 0) {
-                const coverage = headReport.summary.find(
-                    (value) => value.title === 'Statements'
-                )!.percentage;
-                try {
-                    await octokit.checks.create(
-                        formatCoverageAnnotations(
-                            !threshold || coverage > threshold,
-                            coverage,
-                            threshold!,
-                            coverageAnnotations
-                        )
-                    );
-                } catch (err) {
-                    console.error('Failed to create annotations', err);
-                }
-            }
-        }
+        // if (
+        //     jsonReport &&
+        //     isAnnotationEnabled(annotations, 'coverage') &&
+        //     headReport.summary
+        // ) {
+        //     const coverageAnnotations = createCoverageAnnotations(jsonReport);
+        //     if (coverageAnnotations.length > 0) {
+        //         const coverage = headReport.summary.find(
+        //             (value) => value.title === 'Statements'
+        //         )!.percentage;
+        //         try {
+        //             await octokit.checks.create(
+        //                 formatCoverageAnnotations(
+        //                     !threshold || coverage > threshold,
+        //                     coverage,
+        //                     threshold!,
+        //                     coverageAnnotations
+        //                 )
+        //             );
+        //         } catch (err) {
+        //             console.error('Failed to create annotations', err);
+        //         }
+        //     }
+        // }
 
-        if (isInPR && baseReport && pull_request) {
+        // if (isInPR && baseReport && pull_request) {
+        if (pull_request) {
             await generatePRReport(
                 (icons as Record<string, Icons>)[iconType],
                 headReport,
-                baseReport,
+                undefined,
                 threshold,
                 repo,
                 pull_request,
                 octokit,
-                workingDirectory
+                workingDirectory,
+                customTitle
             );
-        } else if (!isInPR) {
-            await generateCommitReport(
-                (icons as Record<string, Icons>)[iconType],
-                headReport,
-                threshold,
-                repo,
-                octokit,
-                workingDirectory
-            );
+
+            // else if (!isInPR) {
+            //     await generateCommitReport(
+            //         (icons as Record<string, Icons>)[iconType],
+            //         headReport,
+            //         threshold,
+            //         repo,
+            //         octokit,
+            //         workingDirectory,
+            //         customTitle
+            //     );
         } else {
             throw new Error(
                 'Something went wrong! Looks like action runs in PR, but report for the base branch or pull_request information is missing!'

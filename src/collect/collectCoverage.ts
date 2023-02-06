@@ -1,7 +1,7 @@
 import { getRawCoverage } from './getRawCoverage';
 import { parseCoverage } from './parseCoverage';
 import { parseJsonReport } from './parseJsonReport';
-import { JsonReport } from '../typings/JsonReport';
+import { CoverageMap } from '../typings/JsonReport';
 import { PackageManagerType, SkipStepType } from '../typings/Options';
 import { Report } from '../typings/Report';
 
@@ -11,7 +11,7 @@ export const collectCoverage = async (
     skipStep: SkipStepType,
     branch?: string,
     workingDirectory?: string
-): Promise<[Report, JsonReport | undefined]> => {
+): Promise<[Report, CoverageMap] | undefined> => {
     const source = await getRawCoverage(
         testCommand,
         packageManager,
@@ -21,17 +21,16 @@ export const collectCoverage = async (
     );
 
     if (typeof source !== 'string') {
-        return [source, undefined];
+        return undefined;
     }
-
     const jsonReport = parseJsonReport(source);
 
-    if (
-        jsonReport.success === false &&
-        (jsonReport as { failReason: unknown }).failReason !== undefined
-    ) {
-        return [jsonReport, undefined];
+    if (jsonReport.success === false) {
+        return undefined;
     }
 
-    return [parseCoverage(jsonReport as JsonReport), jsonReport as JsonReport];
+    return [
+        parseCoverage(jsonReport as CoverageMap),
+        jsonReport as CoverageMap,
+    ];
 };

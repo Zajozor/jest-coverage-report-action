@@ -9,12 +9,13 @@ import { FailReason, Report } from '../typings/Report';
 export const generatePRReport = async (
     icons: Icons,
     headReport: Report,
-    baseReport: Report,
+    baseReport: Report | undefined,
     coverageThreshold: number | undefined,
     repo: { owner: string; repo: string },
     pr: { number: number },
     octokit: ReturnType<typeof getOctokit>,
-    dir?: string
+    dir?: string,
+    customTitle?: string
 ) => {
     const previousReport = await fetchPreviousReport(octokit, repo, pr, dir);
 
@@ -22,9 +23,10 @@ export const generatePRReport = async (
         const reportBody = getReportBody(
             icons,
             headReport,
-            baseReport,
+            undefined,
             coverageThreshold,
-            dir
+            dir,
+            customTitle
         );
 
         if (previousReport) {

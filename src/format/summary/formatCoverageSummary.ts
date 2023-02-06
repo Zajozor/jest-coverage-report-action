@@ -29,7 +29,7 @@ export const formatCoverageSummary = (
                     currSummary.title,
                     formatPercentage(
                         currSummary.percentage,
-                        baseSummary[index].percentage,
+                        baseSummary[index]?.percentage,
                         icons
                     ),
                     `${currSummary.covered}/${currSummary.total}`,

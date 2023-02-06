@@ -1,7 +1,7 @@
 import { join } from 'path';
 
 import { exec } from '@actions/exec';
-import { readFile, rmdir } from 'fs-extra';
+import { readdirSync, readFile, rmdir } from 'fs-extra';
 
 import { REPORT_PATH } from '../constants/REPORT_PATH';
 import { PackageManagerType, SkipStepType } from '../typings/Options';
@@ -28,31 +28,32 @@ export const getRawCoverage = async (
     workingDirectory?: string
 ): Promise<
     | string
-    | { success: false; failReason: FailReason.TESTS_FAILED; error?: Error }
+    | {
+          success: false;
+          failReason: FailReason.TESTS_FAILED | FailReason.NO_REPORT_PRESENT;
+          error: Error;
+      }
 > => {
-    if (branch) {
-        // NOTE: It is possible that the 'git fetch -all' command will fail due to different file permissions, so allow that to fail gracefully
-        try {
-            await exec(`git fetch --all --depth=1`);
-        } catch (err) {
-            console.warn('Error fetching git repository', err);
-        }
-        await exec(`git checkout -f ${branch}`);
-    }
+    // if (branch) {
+    //     // NOTE: It is possible that the 'git fetch -all' command will fail due to different file permissions, so allow that to fail gracefully
+    //     try {
+    //         await exec(`git fetch --all --depth=1`);
+    //     } catch (err) {
+    //         console.warn('Error fetching git repository', err);
+    //     }
+    //     await exec(`git checkout -f ${branch}`);
+    // }
 
     // NOTE: The `npm ci` command is not used. Because if your version of npm is old, the generated `package-lock.json` will also be old, and the latest version of `npm ci` will fail.
-    await rmdir(joinPaths(workingDirectory, 'node_modules'), {
-        recursive: true,
-    });
+    // await rmdir(joinPaths(workingDirectory, 'node_modules'), {
+    //     recursive: true,
+    // });
 
-    if (shouldInstallDeps(skipStep)) {
-        await exec(getPackageManagerInstallCommand(packageManager), undefined, {
-            cwd: workingDirectory,
-        });
-    }
-
-    let executionError: Error | undefined = undefined;
-
+    // if (shouldInstallDeps(skipStep)) {
+    //     await exec(getPackageManagerInstallCommand(packageManager), undefined, {
+    //         cwd: workingDirectory,
+    //     });
+    // }
     if (shouldRunTestScript(skipStep)) {
         try {
             await exec(testCommand, [], {
@@ -60,7 +61,11 @@ export const getRawCoverage = async (
             });
         } catch (error) {
             console.error('Test execution failed with error:', error);
-            executionError = error instanceof Error ? error : undefined;
+            return {
+                success: false,
+                failReason: FailReason.TESTS_FAILED,
+                error: error as Error,
+            };
         }
     }
 
@@ -78,8 +83,11 @@ export const getRawCoverage = async (
 
         return {
             success: false,
-            failReason: FailReason.TESTS_FAILED,
-            error: executionError,
+            failReason: FailReason.NO_REPORT_PRESENT,
+            error: new Error(
+                'Could not read report file located at ' +
+                    joinPaths(workingDirectory, REPORT_PATH)
+            ),
         };
     }
 };

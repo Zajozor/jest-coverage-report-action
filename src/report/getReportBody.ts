@@ -6,33 +6,21 @@ import { getFormattedFailReason } from '../format/getFormattedFailReason';
 import { Icons } from '../format/Icons';
 import { insertArgs } from '../format/insertArgs';
 import REPORT from '../format/REPORT.md';
+import strings from '../format/strings.json';
 import { FailReason, Report } from '../typings/Report';
 
 export const getReportBody = (
     icons: Icons,
     headReport: Report,
-    baseReport: Report | undefined,
+    baseReport: undefined,
     coverageThreshold: number | undefined,
-    dir?: string
+    dir?: string,
+    customTitle?: string
 ) => {
     let reportContent: string;
     let failReason = headReport.failReason;
 
-    let normalizedBaseReport: Report = baseReport as Report;
-
-    if (
-        !baseReport ||
-        !baseReport?.success ||
-        !baseReport?.summary ||
-        !baseReport?.details ||
-        baseReport?.failReason
-    ) {
-        console.log(
-            'Head is ok, but base branch has not valid coverage. Some features will be disabled.'
-        );
-
-        normalizedBaseReport = headReport;
-    }
+    // temporarily not supporting base reports
 
     if (
         headReport.success &&
@@ -43,9 +31,9 @@ export const getReportBody = (
         reportContent = getFormattedCoverage(
             icons,
             headReport.summary,
-            normalizedBaseReport.summary!,
+            headReport.summary,
             headReport.details,
-            normalizedBaseReport.details!,
+            headReport.details,
             coverageThreshold
         );
     } else {
@@ -68,9 +56,9 @@ export const getReportBody = (
                 getFormattedCoverage(
                     icons,
                     headReport.summary,
-                    normalizedBaseReport.summary!,
+                    headReport.summary,
                     headReport.details,
-                    normalizedBaseReport.details!,
+                    headReport.details,
                     coverageThreshold
                 )
             );
@@ -79,12 +67,14 @@ export const getReportBody = (
 
     const reportBody = insertArgs(REPORT, {
         head: getReportTag(dir),
+        title: insertArgs(customTitle || strings.summary.title, {
+            dir: dir ? `for \`${dir}\`` : '',
+        }),
         body: reportContent,
         sha:
             context.payload.after ??
             context.payload.pull_request?.head.sha ??
             context.sha,
-        dir: dir ? `for \`${dir}\`` : '',
     });
 
     return reportBody;
